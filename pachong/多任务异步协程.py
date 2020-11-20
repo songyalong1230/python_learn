@@ -25,8 +25,15 @@
         - 如何将任务对象存储且启动事件循环对象
             loop.run_until_complete(task)
         - 问题
-            - 事件循环执行后如何拿到返回值
+            - 事件循环执行后如何拿到返回值，
+                - 基于任务对象的回调函数
+                - 如何给任务对象绑定回调函数
+                    task.add_done_callback(parse)
             -
+        - 如何注册将多个任务对象注册到事件循环中？
+            loop.run_until_complete(asyncio.wait(task_list))
+            - wait()方法的作用
+                - 表示挂起的意思，就是cpu不停的切换执行每一个任务，遇到阻塞的话执行下个任务
 
 
 '''
@@ -40,14 +47,23 @@ async def func(arg):
     time.sleep(2)
     return len(arg)
 
-if __name__ == '__main__':
+#定义一个任务对象的回调函数,注意：回调函数必须有一个参数，该参数表示的就是该函数的绑定者，可以理解为特殊函数的执行对象，
+#调用task.result()来获取特殊函数的返回结果，return的结果
+def parse(task):
+    print(f'我是一个任务对象的回调函数{task.result()}')
+
+
+#这是一个单个任务对象的事件循环异步调用
+def single_thread():
     #创建一个协程对象
     c = func('haha')
-
     '''
         创建一个任务对象，（基于已有的协程对象创建任务对象）
     '''
     task = asyncio.ensure_future(c)
+    #给task任务对象绑定一个回调函数
+    task.add_done_callback(parse)
+
 
     '''
         创建一个事件循环对象
@@ -59,4 +75,38 @@ if __name__ == '__main__':
         
     '''
     loop.run_until_complete(task)
+
+
+# 这是多个任务对象的事件循环异步调用
+def multi_thread():
+    # 创建三个协程对象
+    c = func('haha')
+    d = func('heihei')
+    e = func('xixixixi')
+    xiecheng_list = [c, d, e]
+    '''
+        创建三个任务对象，（基于已有的协程对象创建任务对象）,创建一个空的任务对象列表
+    '''
+    task_list = []
+    for i in xiecheng_list:
+
+        task = asyncio.ensure_future(i)
+
+        # 给task任务对象绑定一个回调函数
+        task.add_done_callback(parse)
+        task_list.append(task)
+
+    '''
+        创建一个事件循环对象
+    '''
+    loop = asyncio.get_event_loop()
+
+    '''
+        将task任务列表中的【多个】对象存储到loop事件中，并启动事件循环对象
+
+    '''
+    loop.run_until_complete(asyncio.wait(task_list))
+
+if __name__ == '__main__':
+    multi_thread()
 
