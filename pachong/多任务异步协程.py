@@ -34,22 +34,70 @@
             loop.run_until_complete(asyncio.wait(task_list))
             - wait()方法的作用
                 - 表示挂起的意思，就是cpu不停的切换执行每一个任务，遇到阻塞的话执行下个任务
-
+        - 如何解决让程序异步执行【重要】
+            - 在特殊函数内部的实现语句中，不可以出现不支持异步的模块代码，否则会中断整个异步效果；
+            - 支持异步网络请求的模块【aiohttp】
+            - aiohttp的编码使用：
+                - 编写一个大致架构
+                        with aiohttp.ClientSession() as sess: #实例化一个请求对象叫sess
+                            # sess.get()和sess.post()的用法跟原生的基本一样，只是参数proxy跟原生的requests模块的不一样
+                            # proxy= "http://ip:port"
+                            with sess.get(url=url) as respones: # 调用get发请求，然后返回一个相应对象
+                                page_text = respones.text()  # 获取页面数据
+                                # text()返回字符串的响应数据
+                                # read()返回bytes类型的数据
+                                return page_text
+                - 在上面大致架构中补充细节，
+                    1、在每一个with语句前面加一个 async关键字
+                    2、在每一个阻塞操作前加上一个await 关键字，每一个请求前面加；
+                        加await的意思是因为当在事件循环列表里对任务进行执行的时候，当任务1执行到阻塞的时候，会跳到任务2那边执行非阻塞操作，
+                        如果不加 await的话，那么当任务1执行到阻塞操作的时候，那么cpu会跳过任务1的阻塞操作，直接执行任务1的下一步操作，不会去执行任务2，
+                            只有任务1全部都执行完之后才会去执行任务2
+                    - 完整代码：
+                            async with aiohttp.ClientSession() as sess: #实例化一个请求对象叫sess
+                                # sess.get()和sess.post()的用法跟原生的基本一样，只是参数proxy跟原生的requests模块的不一样
+                                # proxy= "http://ip:port"
+                                async with await sess.get(url=url) as respones: # 调用get发请求，然后返回一个相应对象
+                                    page_text = await respones.text()  # 获取页面数据
+                                    # text()返回字符串的响应数据
+                                    # read()返回bytes类型的数据
+                                    return page_text
 
 '''
 
 import asyncio
 import time
 
+# 原来特殊的函数
+# async def func(arg):
+#     print(f'线程{arg}开始')
+
+#     time.sleep(2) #time.sleep(2)模拟requests.get()请求
+#
+#     return len(arg)
+import aiohttp
+url = 'http://www.baidu.com'
 
 async def func(arg):
     print(f'线程{arg}开始')
-    time.sleep(2)
-    return len(arg)
+    # 使用aiohttp进行异步请求
+    url = 'http://www.baidu.com'
+    async with aiohttp.ClientSession() as sess: #实例化一个请求对象叫sess
+        # sess.get()和sess.post()的用法跟原生的基本一样，只是参数proxy跟原生的requests模块的不一样
+        # proxy= "http://ip:port"
+        async with await sess.get(url=url) as respones: # 调用get发请求，然后返回一个相应对象
+            page_text = await respones.text()  # 获取页面数据
+            # text()返回字符串的响应数据
+            # read()返回bytes类型的数据
+            return page_text
+
+    # time.sleep(2)
+
 
 #定义一个任务对象的回调函数,注意：回调函数必须有一个参数，该参数表示的就是该函数的绑定者，可以理解为特殊函数的执行对象，
 #调用task.result()来获取特殊函数的返回结果，return的结果
 def parse(task):
+    # 多任务的异步爬虫中数据解析或者持久化存储的操作需要写在任务对象的回调函数中
     print(f'我是一个任务对象的回调函数{task.result()}')
 
 
@@ -102,11 +150,16 @@ def multi_thread():
     loop = asyncio.get_event_loop()
 
     '''
-        将task任务列表中的【多个】对象存储到loop事件中，并启动事件循环对象
+        将task任务列表中的【多个】对象存储到loop循环事件中
+        
+        现在这一步不不是真正的实现异步任务执行
 
     '''
     loop.run_until_complete(asyncio.wait(task_list))
 
 if __name__ == '__main__':
+    start_time = time.time()
     multi_thread()
+    end_time = time.time() - start_time
+    print(f'任务执行了{end_time}秒')
 
