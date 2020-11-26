@@ -72,5 +72,13 @@ class DuanziSpider(scrapy.Spider):
                            'scrapy_learn.pipelines.ScrapyLearnPipeline': 300,
                         }
             终端执行scrapy crawl duanzi
+        - 如何实现数据的备份
+            - 指的是将爬取到的一组数据存储到多个不同的载体中（文件、mysql、redis）
+            - 持久化存储的操作必须写在管道文件中 pipelines.py
+                - 一个管道类对应一种形式的持久化存储
+                    - 如果想将数据存储到多个载体中则必须要有多个管道类
+                    - 爬虫文件提交的item只可以提交给优先级最高的那一个管道类
+                        - 如何让优先级低的管道类接受到item
+                            - 可以让优先级搞的管道类在process_item中通过return item的形式将item返回给下一个即将被执行的管道类
 '''
 
