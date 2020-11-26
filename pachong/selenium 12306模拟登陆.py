@@ -25,7 +25,7 @@ bro.find_element_by_xpath('/html/body/div[2]/div[2]/ul/li[2]/a').click()
 # 找到账号输入框，对其进行输入账号
 bro.find_element_by_xpath('//*[@id="J-userName"]').send_keys('851096287@qq.com')
 # 找到密码输入框，对其进行输入密码
-bro.find_element_by_xpath('//*[@id="J-password"]').send_keys('wy907141230syl')
+bro.find_element_by_xpath('//*[@id="J-password"]').send_keys('xxxxxxxxxxx')
 # 验证码识别处理，验证码应该呗截屏截取下来，而不应该单独请求
 # 截图需要使用第三方模块PIL，pip install Pillow，from PIL import Image
 bro.save_screenshot('./imgs/login.png') # login.png表示的是登录页面的对应的截取图片

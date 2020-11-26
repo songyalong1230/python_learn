@@ -80,5 +80,11 @@ class DuanziSpider(scrapy.Spider):
                     - 爬虫文件提交的item只可以提交给优先级最高的那一个管道类
                         - 如何让优先级低的管道类接受到item
                             - 可以让优先级搞的管道类在process_item中通过return item的形式将item返回给下一个即将被执行的管道类
+        - 手动请求发送爬取其他页面
+            - callback参数表示请求成功后调用指定的回调函数进行数据解析
+            - yield scrapy.Request(url=url, callback=self.parse)
+                - 回调函数可以用上一页同样的数据解析
+                - 得有结束递归的条件
+                
 '''
 
