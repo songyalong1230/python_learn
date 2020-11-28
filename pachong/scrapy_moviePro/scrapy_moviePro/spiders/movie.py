@@ -33,7 +33,7 @@ class MovieSpider(scrapy.Spider):
             # 手动请求详情页，爬取详情页的数据，在详情页中解析出电影详情页的简介
             # 通过请求传参的机制，将item对象传到回调函数detail_parse里,加一个参数meta
             yield scrapy.Request(detail_url, callback=self.detail_parse, meta={'item': item})
-            if self.pageNum <=5:
+            if self.pageNum <= 5:
                 # 构建下一页的url，去请求解析
                 new_url = self.url % self.pageNum
                 self.pageNum += 1
